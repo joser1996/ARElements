@@ -27,6 +27,7 @@ class MainController: UIViewController {
         
         arView.session.run(arConfiguration)
         arView.session.delegate = self
+        arView.delegate = self
         arView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         //dont want the app to sleep
         //MARK: Will Remove this
@@ -52,7 +53,31 @@ class MainController: UIViewController {
     }
     
     @objc func handleTap(_ sender: UITapGestureRecognizer) {
-        print("Hello World!")
+        let tapLocation = sender.location(in: arView)
+        let objects = arView.hitTest(tapLocation)
+        
+        let box = objects.first?.node
+        if box?.name == "cube" {
+            print("Here")
+            box?.removeFromParentNode()
+            return
+        } else {
+            print("Not here")
+        }
+        
+        guard let hitResult = arView.hitTest(tapLocation, types: [.existingPlaneUsingGeometry, .estimatedHorizontalPlane]).first else {return}
+        let anchor = ARAnchor(name: "cube", transform: hitResult.worldTransform)
+        arView.session.add(anchor: anchor)
+        
+        arView.session.add(anchor: anchor)
+        print("Added Anchor")
+    }
+    
+    func loadCube() -> SCNNode {
+        let box = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
+        let boxNode = SCNNode()
+        boxNode.geometry = box
+        return boxNode
     }
     
 }
@@ -60,7 +85,11 @@ class MainController: UIViewController {
 
 extension MainController: ARSCNViewDelegate, ARSessionDelegate {
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        
+        print("renderer: Attempting to add cube")
+        if let name = anchor.name, name.hasPrefix("cube") {
+            node.addChildNode(loadCube())
+            print("Added Cube to anchor")
+        }
     }
     
 }
