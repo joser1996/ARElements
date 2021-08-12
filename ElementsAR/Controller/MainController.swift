@@ -77,6 +77,7 @@ class MainController: UIViewController {
         let box = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
         let boxNode = SCNNode()
         boxNode.geometry = box
+        boxNode.name = "cube"
         return boxNode
     }
     
